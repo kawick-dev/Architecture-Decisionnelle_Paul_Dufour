@@ -87,3 +87,8 @@ target/
 
 # Mypy cache
 .mypy_cache/
+airflow/logs/scheduler/latest/
+airflow/logs/scheduler/latest/
+airflow/logs/scheduler/latest/
+airflow/logs/
+airflow/logs/

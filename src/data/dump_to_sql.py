@@ -3,7 +3,7 @@ import os
 import sys
 
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 
 def write_data_postgres(dataframe: pd.DataFrame) -> bool:
@@ -17,6 +17,9 @@ def write_data_postgres(dataframe: pd.DataFrame) -> bool:
         - bool : True if the connection to the DBMS and the dump to the DBMS is successful, False if either
         execution is failed
     """
+
+
+
     db_config = {
         "dbms_engine": "postgresql",
         "dbms_username": "postgres",
@@ -26,6 +29,7 @@ def write_data_postgres(dataframe: pd.DataFrame) -> bool:
         "dbms_database": "nyc_warehouse",
         "dbms_table": "nyc_raw"
     }
+
 
     db_config["database_url"] = (
         f"{db_config['dbms_engine']}://{db_config['dbms_username']}:{db_config['dbms_password']}@"
@@ -65,13 +69,18 @@ def main() -> None:
     # Construct the relative path to the folder
     folder_path = os.path.join(script_dir, '..', '..', 'data', 'raw')
 
+    # Get all the parquet files in the folder
     parquet_files = [f for f in os.listdir(folder_path) if
                      f.lower().endswith('.parquet') and os.path.isfile(os.path.join(folder_path, f))]
 
+    # Read the parquet files and dump them into the DBMS
     for parquet_file in parquet_files:
         parquet_df: pd.DataFrame = pd.read_parquet(os.path.join(folder_path, parquet_file), engine='pyarrow')
-
+        
+        # Clean the column names
         clean_column_name(parquet_df)
+
+        # Write the data to the DBMS
         if not write_data_postgres(parquet_df):
             del parquet_df
             gc.collect()
